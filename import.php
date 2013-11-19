@@ -27,7 +27,8 @@ $server = array(
     'password' => $ini_array[$env]['auth_pass'],
   ),
   "org" => $org,
-  "pagination_rows" => $ini_array['pagination_rows'],
+  "ckan_use_src_org" => $ini_array['ckan_use_src_org'],
+  "pagination_rows" => $ini_array['pagination_rows']?$ini_array['pagination_rows']:100,
   "pagination_start" => 0,
 );
 

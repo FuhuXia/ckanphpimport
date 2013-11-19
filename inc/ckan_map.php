@@ -1,6 +1,6 @@
 <?php
 //create a new dataset, all fields are mapped from old dataset.
-function ckan_map($server, $map, $dataset, $unique_name=0) {
+function ckan_map($server, $map, $dataset) {
   $type = $server['source_type'];
 
   //an empty new dataset
@@ -39,9 +39,42 @@ function ckan_map($server, $map, $dataset, $unique_name=0) {
         break;
 
       case 'json:temporal':
-      case 'ckan:temporal_begin':
-      case 'ckan:temporal_end':
         $new_date = get_new_date($dataset[$value[0]]);
+        $new_dataset[$key] = $new_date?$new_date:"0000";
+        break;
+
+      case 'ckan:temporal':
+        $new_date = "0000";
+        //do our best to get date out of the string, ideally into startdate/enddate
+        $date_value = trim($dataset[$value[0]]);
+        $ret = guess_new_date($date_value);
+        if ($ret) {
+          $new_date = $ret;
+        }
+        else {
+          //it is string that php does not understand.
+          //let us try to split it to see if it is two date in the format of "start to end".
+          $split = str_replace(array('to', 'through'), ",", $date_value);
+          $split = explode(',', $split);
+          if ($split && count($split) == 2) {
+            $start_date = guess_new_date(trim($split[0]));
+            $end_date = guess_new_date(trim($split[1]));
+            if ($start_date && $end_date) {
+              $new_date = $start_date . '/' . $end_date;
+            }
+          }
+          else {
+            //try again with splitting "-"
+            $split = explode('-', $date_value);
+            if ($split && count($split) == 2) {
+              $start_date = guess_new_date(trim($split[0]));
+              $end_date = guess_new_date(trim($split[1]));
+              if ($start_date && $end_date) {
+                $new_date = $start_date . '/' . $end_date;
+              }
+            }
+          }
+        }
         $new_dataset[$key] = $new_date;
         break;
 
@@ -87,16 +120,13 @@ function ckan_map($server, $map, $dataset, $unique_name=0) {
         break;
 
       case 'ckan:publisher':
-        // catalog.ckan has raw json data as publisher
-        // let us decode it.
-        $publisher_value = trim($dataset[$value[0]]);
-        $publisher_decoded = json_decode($publisher_value, true);
-        if ($publisher_decoded && isset($publisher_decoded[0]['name'])) {
-          $new_dataset[$key] = $publisher_decoded[0]['name'];
-        }
-        else {
-          $new_dataset[$key] = trim($dataset[$value[0]]);
-        }
+        // TODO for now hard-coded to $dataset.organization.title
+        $new_dataset[$key] = trim($dataset['organization']['title']);
+        break;
+
+      case 'ckan:public_access_level':
+        // use default if missing value
+        $new_dataset[$key] = trim($dataset[$value[0]])?trim($dataset[$value[0]]):'public';
         break;
 
       default:
@@ -114,20 +144,15 @@ function ckan_map($server, $map, $dataset, $unique_name=0) {
   else {
     //replace anything weird with "-"
     $new_dataset['name'] = preg_replace('/[\s\W]+/', '-', strtolower($new_dataset['title']));
-  }
-  $new_dataset['name'] = trim($new_dataset['name'], '-');
-  if ($unique_name) {
-    $new_dataset['name'] = substr($new_dataset['name'], 0, 89); //leave room for timestemp
-    $new_dataset['name'] = $new_dataset['name'] . '-' . time();
+    $new_dataset['name'] = substr($new_dataset['name'], 0, 100);
+    $new_dataset['name'] = trim($new_dataset['name'], '-');
   }
   // 2. owner_org
-  $new_dataset['owner_org'] = $server['org'];
-  // 3. temporal for  ckan
-  if ($type == 'ckan') {
-    if (!empty($new_dataset['temporal_begin'])) {
-      $new_dataset['temporal'] = $new_dataset['temporal_begin'] . '/' . $new_dataset['temporal_end'];
-    }
-    unset($new_dataset['temporal_begin'], $new_dataset['temporal_end']);
+  if ($type == 'ckan' && $server['ckan_use_src_org'] && isset($dataset['organization']['name'])) {
+    $new_dataset['owner_org'] = $dataset['organization']['name'];
+  }
+  else {
+    $new_dataset['owner_org'] = $server['org'];
   }
 
   //clean up work.
@@ -150,7 +175,9 @@ function ckan_map($server, $map, $dataset, $unique_name=0) {
       case 'contact_name':
       case 'homepage_url':
       case 'system_of_records':
-        if (isset($new_dataset[$key])) {
+      case 'related_documents':
+      case 'data_dictionary':
+        if (isset($new_dataset[$key]) && !empty($new_dataset[$key])) {
           $new_dataset['extras'][] = array(
             'key' => $key,
             'value' => $new_dataset[$key],
@@ -161,7 +188,7 @@ function ckan_map($server, $map, $dataset, $unique_name=0) {
       case 'accrual_periodicity':
       case 'category':
       case 'language':
-        if (isset($new_dataset[$key])) {
+        if (isset($new_dataset[$key]) && !empty($new_dataset[$key])) {
           $new_dataset['extras'][] = array(
             'key' => $key,
             'value' => $new_dataset[$key],

@@ -5,28 +5,8 @@ function pad_zero($str) {
   return(substr("00$str", -2));
 }
 
-//return true if api result does not complain duplicated name.
-function check_unique_name($result) {
-  if (
-    isset($result['__type'])
-    &&
-    $result['__type'] == 'Validation Error'
-    &&
-    isset($result['name'][0])
-    &&
-    $result['name'][0] == 'That URL is already in use.'
-  ) {
-    $ret = false;
-  }
-  else {
-    $ret = true;
-  }
-  
-  return $ret;
-}
-
 //try to convert english phrase to date in the format of 2001 | 2001-02-27 | 2001-02-27 15:02:48.
-//return 0000 if all failed.
+//return "" if all failed.
 function get_new_date($date_string) {
     
   $date = date_parse($date_string);
@@ -58,6 +38,23 @@ function get_new_date($date_string) {
     break;
   }
 
-  return $output?$output:"0000";
+  return $output;
 }
 
+//similiar to get_new_date but more strict.
+//return "" if fail to guess.
+function guess_new_date($date_string) {
+  //set timezone so that strtotime() wont complain.
+  date_default_timezone_set('America/New_York');
+
+  $output = '';
+  if (preg_match('/^[0-9]{4}$/' , $date_string)) {
+    //it is 4-digit year. take as it is.
+    $output = $date_string;
+  }
+  elseif (strtotime($date_string)) {
+    //if strtotime can read it, we parse it.
+    $output = get_new_date($date_string);
+  }
+  return $output;
+}

@@ -32,7 +32,9 @@ function get_map($source) {
   $map_ckan = array(
     'title' => array('title', 0, 0),
     'notes' => array('notes', 0, 0),
-    'publisher' => array('responsible-party', 1, 1),
+    // hard-code publisher to orgnization.title in ckan_map for now.
+    // todo: change this map structure.
+    'publisher' => array('place-holder', 1, 1),
     'public_access_level' => array('access-level', 1, 1),
     'contact_email' => array('contact-email', 1, 1),
     'contact_name' => array('person', 1, 1),
@@ -41,10 +43,8 @@ function get_map($source) {
     'data_dictionary' => array('data-dictiionary', 1, 1), // there is a typo.
     'license_title' => array('license_title', 0, 0),
     'spatial' => array('spatial-text', 1, 1),
-    //'temporal' consists of 'temporal_begin' and 'temporal_end'
-    'temporal_begin' => array('temporal-extent-begin', 1, 1),
-    'temporal_end' => array('temporal-extent-end', 1, 1),
-    'release_date' => array('metadata-date', 1, 1),
+    'temporal' => array('dataset-reference-date', 1, 1),
+    'release_date' => array('issued', 1, 1),
     'accrual_periodicity' => array('frequency-of-update', 1, 1),
     'related_documents' => array('references', 1, 1),
     'language' => array('metadata-language', 1, 1),

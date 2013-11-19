@@ -1,12 +1,7 @@
 <?php
 
 function curl_http_request($server, $json_query="", $action='package') {
-  if ($action == 'package') {
-    $action_url = 'api/action/package_create';
-  }
-  elseif ($action == 'resource') {
-    $action_url = 'api/action/resource_create';
-  }
+  $action_url = "api/action/" . $action . "_create";
 
   //use $json_query as indicator whether it is a GET request to fetch date
   //or a POST request to write data.
