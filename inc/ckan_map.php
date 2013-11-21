@@ -154,9 +154,15 @@ function ckan_map($server, $map, $dataset) {
   }
   // 2. owner_org
   if ($type == 'ckan' && $server['ckan_use_src_org'] && isset($dataset['organization']['name'])) {
-    $new_dataset['owner_org'] = $dataset['organization']['name'];
+    //use src org
+    $org_name = $dataset['organization']['name'];
+    if (isset($server['ckan_src_org_map'][$org_name]) && strlen($server['ckan_src_org_map'][$org_name]) !== 0) {
+      $org_name = $server['ckan_src_org_map'][$org_name];
+    }
+    $new_dataset['owner_org'] = $org_name;
   }
   else {
+    //use default org supplied by command argument
     $new_dataset['owner_org'] = $server['org'];
   }
 

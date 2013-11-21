@@ -28,6 +28,7 @@ $server = array(
   ),
   "org" => $org,
   "ckan_use_src_org" => $ini_array['ckan_use_src_org'],
+  "ckan_src_org_map" => $ini_array['ckan_src_org_map']
   "pagination_rows" => $ini_array['pagination_rows']?$ini_array['pagination_rows']:100,
   "pagination_start" => 0,
 );
