@@ -31,6 +31,11 @@ function ckan_map($server, $map, $dataset) {
         foreach ($tags as $tag) {
           $clean_tag = preg_replace('/[^a-zA-Z0-9_-]+/', ' ', $tag);
           $clean_tag = trim($clean_tag);
+          $max_length = 100;
+          if (strlen($clean_tag) > $max_length) {
+            //cut at last space before 100th char.
+            $clean_tag = preg_replace('/\s+?(\S+)?$/', '', substr($clean_tag, 0, $max_length));
+          }
           if (strlen($clean_tag) > 1) {
             $new_dataset[$key][] = array('name' => $clean_tag);
           }
