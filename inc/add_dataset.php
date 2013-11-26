@@ -45,7 +45,7 @@ function add_dataset($server, $map, $dataset) {
           echo ("    Title: $org_title\n");
         }
         else {
-          die(print_r($ret) . "\n");
+          die(print_r($ret, true) . "\n");
         }
         $new_ds['owner_org'] = $org_name;
         $json_query = json_encode($new_ds);
