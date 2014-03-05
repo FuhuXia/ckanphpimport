@@ -135,7 +135,10 @@ function ckan_map($server, $map, $dataset) {
         break;
 
       default:
-        $new_dataset[$key] = trim($dataset[$value[0]]);
+        $new_dataset[$key] = $dataset[$value[0]];
+        if (is_string($new_dataset[$key])) {
+          $new_dataset[$key] = trim($new_dataset[$key]);
+        }
 
     }
   }
