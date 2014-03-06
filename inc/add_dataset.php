@@ -62,6 +62,8 @@ function add_dataset($server, $map, $dataset) {
   if (
     ($type == 'json' && !empty($dataset['accessURL'])) 
     || 
+    ($type == 'datajson' && (!empty($dataset['distribution']) || !empty($dataset['accessURL'])))  
+    || 
     ($type == 'ckan' && !empty($dataset['resources']))
     ) {
     $b_has_resource = true;
@@ -71,10 +73,20 @@ function add_dataset($server, $map, $dataset) {
     $resources = array();
     switch ($type) {
       case 'json':
-        //somehow our json source has flattend resource structure, mistakenly.
+        //somehow our json source has flattened resource structure, mistakenly.
         //let us do this until it is corrected.
         //todo
         $resources[] = $dataset;
+        break;
+
+      case 'datajson':
+        //check distribution first, if empty, use flattened resource structure.
+        if (!empty($dataset['distribution'])) {
+          $resources = $dataset['distribution'];
+        }
+        else {
+          $resources[] = $dataset;
+        }
         break;
 
       case 'ckan':

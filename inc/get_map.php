@@ -27,6 +27,35 @@ function get_map($source) {
     'format' => array('format',2),
   );
 
+  // 'dest_key' => array('source_key', dest_position)
+  // for dest_position, 0/1/2 denotes root/extras/resources.
+  $map_datajson = array(
+    'title' => array('title', 0),
+    'notes' => array('description', 0),
+    'publisher' => array('publisher', 1),
+    'public_access_level' => array('accessLevel', 1),
+    'contact_email' => array('mbox', 1),
+    'contact_name' => array('contactPoint', 1),
+    'unique_id' => array('identifier', 1),
+    'tags' => array('keyword', 0),
+    'data_dictionary' => array('dataDictionary', 1),
+    'license_title' => array('license', 0),
+    'category' => array('theme', 1),
+    'spatial' => array('spatial', 1),
+    'temporal' => array('temporal', 1),
+    'release_date' => array('issued', 1),
+    'accrual_periodicity' => array('accrualPeriodicity', 1),
+    'related_documents' => array('references', 1),
+    'bureau_code' => array('bureauCode', 1),
+    'program_code' => array('programCode', 1),
+    'language' => array('language', 1),
+    'data_quality' => array('dataQuality', 1),
+    'homepage_url' => array('landingPage',1),
+    //'system_of_records' => array('systemOfRecords', 1),
+    'url' => array('accessURL',2),
+    'format' => array('format',2),
+   );
+
   // 'dest_key' => array('source_key', dest_position, source_position)
   // 0/1/2 denotes root/extras/resources.
   $map_ckan = array(

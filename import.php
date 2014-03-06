@@ -49,6 +49,7 @@ if (empty($ret)) {
 switch ($server['source_type']) {
 
   case 'json':
+  case 'datajson':
     $datasets = $ret;
     $j = count($datasets);
     for ($i=0; $i < $j; $i++) { 

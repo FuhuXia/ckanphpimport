@@ -24,6 +24,7 @@ function ckan_map($server, $map, $dataset) {
     switch ("$type:$key") {
 
       case 'json:tags':
+      case 'datajson:tags':
       case 'ckan:tags':
         $new_dataset[$key] = array();
         $tags = $dataset[$value[0]];
@@ -44,6 +45,13 @@ function ckan_map($server, $map, $dataset) {
           }
         }
 
+        break;
+
+      case 'datajson:bureau_code':
+      case 'datajson:program_code':
+      case 'datajson:category':
+        $codes = $dataset[$value[0]];
+        $new_dataset[$key] = implode(", ", $codes);
         break;
 
       case 'json:temporal':
