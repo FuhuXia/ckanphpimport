@@ -26,8 +26,11 @@ function ckan_map($server, $map, $dataset) {
       case 'json:tags':
       case 'ckan:tags':
         $new_dataset[$key] = array();
-        $tags = str_replace(array(";", "\r\n", "\r", "\n", "\t"), ',', $dataset[$value[0]]);
-        $tags = explode(',', $tags);
+        $tags = $dataset[$value[0]];
+        if (is_string($tags)) {
+          $tags = str_replace(array(";", "\r\n", "\r", "\n", "\t"), ',', $dataset[$value[0]]);
+          $tags = explode(',', $tags);
+        }
         foreach ($tags as $tag) {
           $clean_tag = preg_replace('/[^a-zA-Z0-9_-]+/', ' ', $tag);
           $clean_tag = trim($clean_tag);
