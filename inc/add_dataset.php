@@ -51,9 +51,6 @@ function add_dataset($server, $map, $dataset) {
       $json_query = json_encode($new_ds);
       continue;
     }
-    else {
-      die("unknown error.\n");
-    }
   }
 
   // need to create resource?
