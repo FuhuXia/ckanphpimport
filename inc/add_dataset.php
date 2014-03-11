@@ -5,6 +5,7 @@ function add_dataset($server, $map, $dataset) {
   $new_ds = ckan_map($server, $map, $dataset);
   $json_query = json_encode($new_ds);
 
+
   //add dataset to destination server
   //then check result
   //repeat if necessary
@@ -18,7 +19,19 @@ function add_dataset($server, $map, $dataset) {
 
     //something wrong. retry or quit right away.
     if (!$check['retry']) {
-      die($check['message'] . "\n");
+      //workaround to the false server error message.
+      $json_query = array(
+        'purpose' => 'latest',
+        'data' => $new_ds,
+      );
+      $result = curl_http_request($server, $json_query);
+      if (!$result || !$result['result']['results'] || $result['result']['results'][0]['name'] != $new_ds['name']) {
+        die($check['message'] . "\n");
+      }
+      else {
+        $result = $result['result']['results'][0];
+        break;
+      }
     }
 
     if ($check['message'] == 'NAME_NOT_UNIQUE') {
