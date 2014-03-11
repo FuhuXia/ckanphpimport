@@ -20,40 +20,36 @@ function add_dataset($server, $map, $dataset) {
     if (!$check['retry']) {
       die($check['message'] . "\n");
     }
-    else { 
-      if ($check['message'] == 'NAME_NOT_UNIQUE') {
-        $new_ds['name'] = substr($new_ds['name'], 0, 89); //leave room for timestemp
-        $new_ds['name'] = $new_ds['name'] . '-' . time();
-        $json_query = json_encode($new_ds);
-        continue;
-      }
-      elseif ($check['message'] == 'ORG_NOT_EXISTS') {
-        //create new org
-        $org_data = array(
-          'name' => $new_ds['owner_org'],
-          'title' => ($type == 'ckan' && isset($dataset['organization']['title']))? $dataset['organization']['title'] : $new_ds['owner_org'],
-          'image_url' => ($type == 'ckan' && isset($dataset['organization']['image_url']))? $dataset['organization']['image_url'] : "",
-          'description' => ($type == 'ckan' && isset($dataset['organization']['description']))? $dataset['organization']['description'] : "",
-        );
-        $json_query = json_encode($org_data);
-        $ret = curl_http_request($server, $json_query, 'organization');
-        if (isset($ret['type']) && $ret['type'] == 'organization') {
-          $org_name = $ret['name'];
-          $org_title = $ret['title'];
-          echo ("--- New organization added ---\n");
-          echo ("    Name: $org_name\n");
-          echo ("    Title: $org_title\n");
-        }
-        else {
-          die(print_r($ret, true) . "\n");
-        }
-        $new_ds['owner_org'] = $org_name;
-        $json_query = json_encode($new_ds);
-        continue;
+
+    if ($check['message'] == 'NAME_NOT_UNIQUE') {
+      $new_ds['name'] = substr($new_ds['name'], 0, 89); //leave room for timestemp
+      $new_ds['name'] = $new_ds['name'] . '-' . time();
+      $json_query = json_encode($new_ds);
+      continue;
+    }
+    elseif ($check['message'] == 'ORG_NOT_EXISTS') {
+      //create new org
+      $org_data = array(
+        'name' => $new_ds['owner_org'],
+        'title' => ($type == 'ckan' && isset($dataset['organization']['title']))? $dataset['organization']['title'] : $new_ds['owner_org'],
+        'image_url' => ($type == 'ckan' && isset($dataset['organization']['image_url']))? $dataset['organization']['image_url'] : "",
+        'description' => ($type == 'ckan' && isset($dataset['organization']['description']))? $dataset['organization']['description'] : "",
+      );
+      $json_query = json_encode($org_data);
+      $ret = curl_http_request($server, $json_query, 'organization');
+      if (isset($ret['type']) && $ret['type'] == 'organization') {
+        $org_name = $ret['name'];
+        $org_title = $ret['title'];
+        echo ("--- New organization added ---\n");
+        echo ("    Name: $org_name\n");
+        echo ("    Title: $org_title\n");
       }
       else {
-        die("unknown error.\n");
+        die(print_r($ret, true) . "\n");
       }
+      $new_ds['owner_org'] = $org_name;
+      $json_query = json_encode($new_ds);
+      continue;
     }
   }
 
