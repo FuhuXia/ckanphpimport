@@ -50,8 +50,10 @@ function ckan_map($server, $map, $dataset) {
       case 'datajson:bureau_code':
       case 'datajson:program_code':
       case 'datajson:category':
-        $codes = $dataset[$value[0]];
-        $new_dataset[$key] = implode(", ", $codes);
+        if (isset($dataset[$value[0]])) {
+          $codes = $dataset[$value[0]];
+          $new_dataset[$key] = implode(", ", $codes);
+        }
         break;
 
       case 'json:temporal':
@@ -286,13 +288,21 @@ function ckan_map2($server, $dataset, $new_dataset) {
     'value' => $dataset['modified'],
   );
 
+  if (isset($dataset['license'])) {
+    $extras[] = array(
+      'key' => 'license',
+      'value' => $dataset['license'],
+    );
+  }
+
   // add one unique element just in case some weird ckan bug.
   $extras[] = array(
-    'key' => 'ckanphpimport',
+    'key' => 'updated_time_hash',
     'value' => uniqid(),
   );
 
   $new_dataset['extras'] = $extras;
+
 
   return $new_dataset;
 }

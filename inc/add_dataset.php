@@ -156,18 +156,35 @@ function add_dataset($server, $map, $dataset) {
       'data' => $new_ds,
     );
     $result = curl_http_request($server, $json_query);
+    // todo: use other criteria
     if (!$result || !$result['result'] || $result['result']['name'] != $new_ds['name']) {
-      die("2ndmap query failed." . "\n");
+
+      //workaround to the false server error message.
+      $json_query = array(
+        'purpose' => 'latest',
+        'data' => $new_ds,
+      );
+      $result = curl_http_request($server, $json_query);
+      if (!$result || !$result['result']['results'] || $result['result']['results'][0]['name'] != $new_ds['name']) {
+        die("2ndmap query failed." . "\n");
+      }
+      else {
+        $result = $result['result']['results'][0];
+      }
+    }
+    else {
+      $result = $result['result'];
     }
 
-    $result = $result['result'];
     $new_dataset = ckan_map2($server, $dataset, $result);
 
     $json_query = json_encode($new_dataset);
     $ret = curl_http_request($server, $json_query, '2ndmap');
-    if (empty($ret['id'])) {
-      die(print_r($ret, true) . "\n");
-    }
+    // todo: add here workaround to the false server error message.
+    // todo: use other criteria
+    // if (empty($ret['id'])) {
+    //   die(print_r($ret, true) . "\n");
+    // }
   }
 
   // all done. return dataset name to caller.
