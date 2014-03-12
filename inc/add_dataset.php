@@ -71,7 +71,7 @@ function add_dataset($server, $map, $dataset) {
   if (
     ($type == 'json' && !empty($dataset['accessURL'])) 
     || 
-    ($type == 'datajson' && (!empty($dataset['distribution']) || !empty($dataset['accessURL'])))  
+    ($type == 'datajson' && (!empty($dataset['distribution']) || !empty($dataset['accessURL']) || !empty($dataset['webService'])))
     || 
     ($type == 'ckan' && !empty($dataset['resources']))
     ) {
@@ -90,11 +90,29 @@ function add_dataset($server, $map, $dataset) {
 
       case 'datajson':
         //check distribution first, if empty, use flattened resource structure.
+        // manual mapping.
+        $resources = array();
         if (!empty($dataset['distribution'])) {
-          $resources = $dataset['distribution'];
+          foreach ($dataset['distribution'] as $distribution) {
+            $resources[] = array(
+              'accessURL' => isset($distribution['accessURL'])?$distribution['accessURL']:$distribution['webService'],
+              'format' => $distribution['format'],
+            );
+          }
         }
         else {
-          $resources[] = $dataset;
+          if (isset($dataset['accessURL'])) {
+            $resources[] = array(
+              'accessURL' => $dataset['accessURL'],
+              'format' => $dataset['format'],
+            );
+          }
+          if (isset($dataset['webService'])) {
+            $resources[] = array(
+              'accessURL' => $dataset['webService'],
+              'format' => $dataset['format'],
+            );
+          }
         }
         break;
 
