@@ -231,6 +231,72 @@ function ckan_map($server, $map, $dataset) {
   return $new_dataset;
 }
 
+
+function ckan_map2($server, $dataset, $new_dataset) {
+
+  $extras = array();
+
+  $map = array(
+    'publisher'                 => 'publisher',
+    'public_access_level'       => 'accessLevel',
+    'system_of_records'         => 'systemOfRecords',
+    'temporal'                  => 'temporal',
+    'accrual_periodicity'       => 'accrualPeriodicity',
+    'release_date'              => 'issued',
+    'access_level_comment'      => 'accessLevelComment',
+    'primary_it_investment_uii' => 'PrimaryITInvestmentUII',
+    'data_dictionary'           => 'dataDictionary',
+    'homepage_url'              => 'landingPage',
+    'contact_email'             => 'mbox',
+    'unique_id'                 => 'identifier',
+    'spatial'                   => 'spatial',
+    'contact_name'              => 'contactPoint',
+    'data_quality'              => 'dataQuality',
+  );
+
+  $map_array = array(
+    'category'           => 'theme',
+    'language'           => 'language',
+    'program_code'       => 'programCode',
+    'bureau_code'        => 'bureauCode',
+    'related_documents'  => 'references',
+  );
+
+  foreach ($map as $new => $old) {
+    if (isset($dataset[$old])) {
+      $extras[] = array(
+        'key' => $new,
+        'value' => $dataset[$old],
+      );
+    }
+  }
+
+  foreach ($map_array as $new => $old) {
+    if (isset($dataset[$old])) {
+      $extras[] = array(
+        'key' => $new,
+        'value' => implode(", ", $dataset[$old]),
+      );
+    }
+  }
+
+  // temporarily hold the modified field.
+  $extras[] = array(
+    'key' => 'modified',
+    'value' => $dataset['modified'],
+  );
+
+  // add one unique element just in case some weird ckan bug.
+  $extras[] = array(
+    'key' => 'ckanphpimport',
+    'value' => uniqid(),
+  );
+
+  $new_dataset['extras'] = $extras;
+
+  return $new_dataset;
+}
+
 //helper function to find extras values
 function _find_extras_value($dataset, $name) {
   $extras = $dataset['extras'];

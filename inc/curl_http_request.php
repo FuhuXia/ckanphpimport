@@ -5,7 +5,7 @@ function curl_http_request($server, $json_query="", $action='package') {
   //use $json_query as indicator whether it is a GET request to fetch date
   //or a POST request to write data.
   $b_fetch_not_post = empty($json_query);
-  $b_latest = false;
+  $b_tbd = false;
 
   if ($b_fetch_not_post) { // fetch data
     $src_url = $server["url_src"];
@@ -16,16 +16,29 @@ function curl_http_request($server, $json_query="", $action='package') {
   }
   elseif (is_array($json_query) && $json_query['purpose'] == 'latest') { // check lastest on destination server
     //todo: $json_query has been re-purposed.
-    $b_latest = true;
+    $b_tbd = true;
     $ch = curl_init($server["url_dest"] . "api/action/package_search?q=organization:" . $json_query['data']['owner_org'] . "&sort=metadata_modified%20desc&rows=1");
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
     curl_setopt($ch, CURLOPT_HTTPHEADER, array(
     'X-CKAN-API-Key: ' . $server['api'],
     ));
   }
+  elseif (is_array($json_query) && $json_query['purpose'] == '2ndmap') {
+    $b_tbd = true;
+    $ch = curl_init($server["url_dest"] . "api/action/package_show?id=" . $json_query['data']['name']);
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+    'X-CKAN-API-Key: ' . $server['api'],
+    ));
+  }
   else { // Post data
-    $ch = curl_init($server["url_dest"] . "api/action/" . $action . "_create");
-
+    if ($action == '2ndmap') {
+      $url = $server["url_dest"] . "api/action/package_update";
+    }
+    else {
+      $url = $server["url_dest"] . "api/action/" . $action . "_create";
+    }
+    $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
     curl_setopt($ch, CURLOPT_POSTFIELDS, $json_query);
     curl_setopt($ch, CURLOPT_HTTPHEADER, array(
@@ -44,7 +57,7 @@ function curl_http_request($server, $json_query="", $action='package') {
 
   curl_close($ch);
   
-  if ($b_fetch_not_post || $b_latest) {
+  if ($b_fetch_not_post || $b_tbd) {
     //remove weird chars
     $response = utf8_encode($response);
     $ret = json_decode($response, true);

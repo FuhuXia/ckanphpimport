@@ -118,6 +118,7 @@ function add_dataset($server, $map, $dataset) {
         }
         $data[$key] = $resource[$value[0]];
       }
+      $data['mimetype'] = $data['format'];
 
       $json_query = json_encode($data);
       $ret = curl_http_request($server, $json_query, 'resource');
@@ -126,6 +127,29 @@ function add_dataset($server, $map, $dataset) {
       }
     }
 
+  }
+
+  //2nd map for $type == 'datajson'
+  if ($type == 'datajson') {
+    // fetch the newly created dataset, then update.
+    // this is workaround for the weird issue during creation.
+    $json_query = array(
+      'purpose' => '2ndmap',
+      'data' => $new_ds,
+    );
+    $result = curl_http_request($server, $json_query);
+    if (!$result || !$result['result'] || $result['result']['name'] != $new_ds['name']) {
+      die("2ndmap query failed." . "\n");
+    }
+
+    $result = $result['result'];
+    $new_dataset = ckan_map2($server, $dataset, $result);
+
+    $json_query = json_encode($new_dataset);
+    $ret = curl_http_request($server, $json_query, '2ndmap');
+    if (empty($ret['id'])) {
+      die(print_r($ret, true) . "\n");
+    }
   }
 
   // all done. return dataset name to caller.
