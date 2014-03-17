@@ -288,13 +288,6 @@ function ckan_map2($server, $dataset, $new_dataset) {
     'value' => $dataset['modified'],
   );
 
-  if (isset($dataset['license'])) {
-    $extras[] = array(
-      'key' => 'license',
-      'value' => $dataset['license'],
-    );
-  }
-
   // add one unique element just in case some weird ckan bug.
   $extras[] = array(
     'key' => 'updated_time_hash',
@@ -303,6 +296,30 @@ function ckan_map2($server, $dataset, $new_dataset) {
 
   $new_dataset['extras'] = $extras;
 
+  //license
+  $licenses = array(
+    'Creative Commons Attribution' => 'cc-by',
+    'Creative Commons Attribution Share-Alike' => 'cc-by-sa',
+    'Creative Commons CCZero' => 'cc-zero',
+    'Creative Commons Non-Commercial (Any)' => 'cc-nc',
+    'GNU Free Documentation License' => 'gfdl',
+    'License Not Specified' => 'notspecified',
+    'Open Data Commons Attribution License' => 'odc-by',
+    'Open Data Commons Open Database License (ODbL)' => 'odc-odbl',
+    'Open Data Commons Public Domain Dedication and License (PDDL)' => 'odc-pddl',
+    'Other (Attribution)' => 'other-at',
+    'Other (Non-Commercial)' => 'other-nc',
+    'Other (Not Open)' => 'other-closed',
+    'Other (Open)' => 'other-open',
+    'Other (Public Domain)' => 'other-pd',
+    'UK Open Government Licence (OGL)' => 'uk-ogl',
+  );
+  if (!isset($dataset['license'])) {
+    $new_dataset['license_id'] = $licenses['License Not Specified'];
+  }
+  elseif ($licenses[$dataset['license']]) {
+    $new_dataset['license_id'] = $licenses[$dataset['license']];
+  }
 
   return $new_dataset;
 }
