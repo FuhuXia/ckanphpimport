@@ -268,7 +268,7 @@ function ckan_map2($server, $dataset, $new_dataset) {
     if (isset($dataset[$old])) {
       $extras[] = array(
         'key' => $new,
-        'value' => $dataset[$old],
+        'value' => ($old == 'dataQuality' && !empty($dataset[$old]) ) ?"on":$dataset[$old],
       );
     }
   }

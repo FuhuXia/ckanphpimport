@@ -38,6 +38,7 @@ function get_map($source) {
     'contact_name' => array('contactPoint', 1),
     'unique_id' => array('identifier', 1),
     'tags' => array('keyword', 0),
+    'tag_string' => array('keyword', 0),
     'data_dictionary' => array('dataDictionary', 1),
     'license_title' => array('license', 0),
     'category' => array('theme', 1),
