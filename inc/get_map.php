@@ -70,6 +70,7 @@ function get_map($source) {
     'contact_name' => array('person', 1, 1),
     'unique_id' => array('id', 1, 0),
     'tags' => array('tags', 0, 1),
+    'tag_string' => array('tags', 0, 1),
     'data_dictionary' => array('data-dictiionary', 1, 1), // there is a typo.
     'license_title' => array('license_title', 0, 0),
     'spatial' => array('spatial-text', 1, 1),

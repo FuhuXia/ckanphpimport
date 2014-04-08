@@ -147,8 +147,8 @@ function add_dataset($server, $map, $dataset) {
 
   }
 
-  //2nd map for $type == 'datajson'
-  if ($type == 'datajson') {
+  //2nd map for $type == 'datajson|ckan'
+  if ($type == 'datajson' || $type == 'ckan') {
     // fetch the newly created dataset, then update.
     // this is workaround for the weird issue during creation.
     $json_query = array(

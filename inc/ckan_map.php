@@ -235,90 +235,158 @@ function ckan_map($server, $map, $dataset) {
 
 
 function ckan_map2($server, $dataset, $new_dataset) {
-
+  $type = $server['source_type'];
   $extras = array();
 
-  $map = array(
-    'publisher'                 => 'publisher',
-    'public_access_level'       => 'accessLevel',
-    'system_of_records'         => 'systemOfRecords',
-    'temporal'                  => 'temporal',
-    'accrual_periodicity'       => 'accrualPeriodicity',
-    'release_date'              => 'issued',
-    'access_level_comment'      => 'accessLevelComment',
-    'primary_it_investment_uii' => 'PrimaryITInvestmentUII',
-    'data_dictionary'           => 'dataDictionary',
-    'homepage_url'              => 'landingPage',
-    'contact_email'             => 'mbox',
-    'unique_id'                 => 'identifier',
-    'spatial'                   => 'spatial',
-    'contact_name'              => 'contactPoint',
-    'data_quality'              => 'dataQuality',
-  );
+  if ($type == 'datajson') {
 
-  $map_array = array(
-    'category'           => 'theme',
-    'language'           => 'language',
-    'program_code'       => 'programCode',
-    'bureau_code'        => 'bureauCode',
-    'related_documents'  => 'references',
-  );
+    $map = array(
+      'publisher'                 => 'publisher',
+      'public_access_level'       => 'accessLevel',
+      'system_of_records'         => 'systemOfRecords',
+      'temporal'                  => 'temporal',
+      'accrual_periodicity'       => 'accrualPeriodicity',
+      'release_date'              => 'issued',
+      'access_level_comment'      => 'accessLevelComment',
+      'primary_it_investment_uii' => 'PrimaryITInvestmentUII',
+      'data_dictionary'           => 'dataDictionary',
+      'homepage_url'              => 'landingPage',
+      'contact_email'             => 'mbox',
+      'unique_id'                 => 'identifier',
+      'spatial'                   => 'spatial',
+      'contact_name'              => 'contactPoint',
+      'data_quality'              => 'dataQuality',
+    );
 
-  foreach ($map as $new => $old) {
-    if (isset($dataset[$old])) {
-      $extras[] = array(
-        'key' => $new,
-        'value' => ($old == 'dataQuality' && !empty($dataset[$old]) ) ?"on":$dataset[$old],
-      );
+    $map_array = array(
+      'category'           => 'theme',
+      'language'           => 'language',
+      'program_code'       => 'programCode',
+      'bureau_code'        => 'bureauCode',
+      'related_documents'  => 'references',
+    );
+
+    foreach ($map as $new => $old) {
+      if (isset($dataset[$old])) {
+        $extras[] = array(
+          'key' => $new,
+          'value' => ($old == 'dataQuality' && !empty($dataset[$old]) ) ?"on":$dataset[$old],
+        );
+      }
     }
-  }
 
-  foreach ($map_array as $new => $old) {
-    if (isset($dataset[$old])) {
-      $extras[] = array(
-        'key' => $new,
-        'value' => implode(", ", $dataset[$old]),
-      );
+    foreach ($map_array as $new => $old) {
+      if (isset($dataset[$old])) {
+        $extras[] = array(
+          'key' => $new,
+          'value' => implode(", ", $dataset[$old]),
+        );
+      }
     }
+
+    // temporarily hold the modified field.
+    $extras[] = array(
+      'key' => 'modified',
+      'value' => $dataset['modified'],
+    );
+
+    // add one unique element just in case some weird ckan bug.
+    $extras[] = array(
+      'key' => 'updated_time_hash',
+      'value' => uniqid(),
+    );
+
+    $new_dataset['extras'] = $extras;
+
+    //license
+    $licenses = array(
+      'Creative Commons Attribution' => 'cc-by',
+      'Creative Commons Attribution Share-Alike' => 'cc-by-sa',
+      'Creative Commons CCZero' => 'cc-zero',
+      'Creative Commons Non-Commercial (Any)' => 'cc-nc',
+      'GNU Free Documentation License' => 'gfdl',
+      'License Not Specified' => 'notspecified',
+      'Open Data Commons Attribution License' => 'odc-by',
+      'Open Data Commons Open Database License (ODbL)' => 'odc-odbl',
+      'Open Data Commons Public Domain Dedication and License (PDDL)' => 'odc-pddl',
+      'Other (Attribution)' => 'other-at',
+      'Other (Non-Commercial)' => 'other-nc',
+      'Other (Not Open)' => 'other-closed',
+      'Other (Open)' => 'other-open',
+      'Other (Public Domain)' => 'other-pd',
+      'UK Open Government Licence (OGL)' => 'uk-ogl',
+    );
+    if (!isset($dataset['license'])) {
+      $new_dataset['license_id'] = $licenses['License Not Specified'];
+    }
+    elseif ($licenses[$dataset['license']]) {
+      $new_dataset['license_id'] = $licenses[$dataset['license']];
+    }
+
   }
+  elseif ($type == 'ckan') {
 
-  // temporarily hold the modified field.
-  $extras[] = array(
-    'key' => 'modified',
-    'value' => $dataset['modified'],
-  );
+    $map = array(
+      'contact_email'             => 'contact-email',
+      'data_quality'              => 'data-quality',
+      'release_date'              => 'issued',
+      'temporal'                  => 'dataset-reference-date',
+      'spatial'                   => 'spatial-text',
+      'accrual_periodicity'       => 'frequency-of-update',
+      'modified'                  => 'metadata-date',
+    );
 
-  // add one unique element just in case some weird ckan bug.
-  $extras[] = array(
-    'key' => 'updated_time_hash',
-    'value' => uniqid(),
-  );
+    $map_array = array(
+      'category'           => 'theme',
+      'related_documents'  => 'references',
+    );
 
-  $new_dataset['extras'] = $extras;
+    foreach ($map as $new => $old) {
+      foreach ($dataset['extras'] as $extra) {
+        if ($extra['key'] == $old) {
+          $extras[] = array(
+            'key' => $new,
+            'value' => ($old == 'data-quality' && strtolower($extra['value']) == "true" ) ?"on":$extra['value'],
+          );
+          break;
+        }
+      }
+    }
 
-  //license
-  $licenses = array(
-    'Creative Commons Attribution' => 'cc-by',
-    'Creative Commons Attribution Share-Alike' => 'cc-by-sa',
-    'Creative Commons CCZero' => 'cc-zero',
-    'Creative Commons Non-Commercial (Any)' => 'cc-nc',
-    'GNU Free Documentation License' => 'gfdl',
-    'License Not Specified' => 'notspecified',
-    'Open Data Commons Attribution License' => 'odc-by',
-    'Open Data Commons Open Database License (ODbL)' => 'odc-odbl',
-    'Open Data Commons Public Domain Dedication and License (PDDL)' => 'odc-pddl',
-    'Other (Attribution)' => 'other-at',
-    'Other (Non-Commercial)' => 'other-nc',
-    'Other (Not Open)' => 'other-closed',
-    'Other (Open)' => 'other-open',
-    'Other (Public Domain)' => 'other-pd',
-    'UK Open Government Licence (OGL)' => 'uk-ogl',
-  );
-  if (!isset($dataset['license'])) {
-    $new_dataset['license_id'] = $licenses['License Not Specified'];
-  }
-  elseif ($licenses[$dataset['license']]) {
-    $new_dataset['license_id'] = $licenses[$dataset['license']];
+    foreach ($map_array as $new => $old) {
+      foreach ($dataset['extras'] as $extra) {
+        if ($extra['key'] == $old) {
+          $extras[] = array(
+            'key' => $new,
+            'value' => implode(", ", $extra['value']),
+          );
+          break;
+        }
+      }
+    }
+
+    $extras[] = array(
+      'key' => 'publisher',
+      'value' => $dataset['organization']['title'],
+    );
+
+    $extras[] = array(
+      'key' => 'public_access_level',
+      'value' => 'public',
+    );
+
+
+    // add one unique element just in case some weird ckan bug.
+    $extras[] = array(
+      'key' => 'updated_time_hash',
+      'value' => uniqid(),
+    );
+
+    $new_dataset['extras'] = $extras;
+
+    if ($dataset['license_id']) {
+      $new_dataset['license_id'] = $dataset['license_id'];
+    }
   }
 
   return $new_dataset;
