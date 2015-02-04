@@ -177,6 +177,8 @@ function add_dataset($server, $map, $dataset) {
     }
 
     $new_dataset = ckan_map2($server, $dataset, $result);
+    // what is a better place to make it private than here
+    $new_dataset['private'] = true;
 
     $json_query = json_encode($new_dataset);
     $ret = curl_http_request($server, $json_query, '2ndmap');
