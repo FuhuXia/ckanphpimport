@@ -59,6 +59,48 @@ switch ($server['source_type']) {
     }
     break;
 
+  case 'datajson-v11':
+    $datasets = $ret['dataset'];
+    $datasets_children = array();
+    $datasets_standalone = array();
+    $datasets_parent = array();
+
+    $identifiers_parent = array();
+    $identifiers_children = array();
+
+    $j = count($datasets);
+
+    for ($i=0; $i < $j; $i++) {
+      if (isset($datasets[$i]['isPartOf']) && trim($datasets[$i]['isPartOf']) != '') {
+        $datasets_children[] = $datasets[$i];
+        $identifiers_children[] = $datasets[$i]['identifier'];
+        if (!in_array(trim($datasets[$i]['isPartOf'], $identifiers_parent))) {
+          $identifiers_parent[] = trim($datasets[$i]['isPartOf']);
+        }
+      }
+    }
+
+    for ($i=0; $i < $j; $i++) {
+      if (in_array($datasets[$i]['identifier'], $identifiers_parent) && in_array($datasets[$i]['identifier'], $identifiers_children)) {
+        echo ('Dataset cant be both parent and child: ' + $datasets[$i]['identifier']);
+        exit();
+      }
+      elseif (in_array($datasets[$i]['identifier'], $identifiers_parent) && !in_array($datasets[$i]['identifier'], $identifiers_children)) {
+        $datasets_parent[] = $datasets[$i];
+      }
+      elseif (!in_array($datasets[$i]['identifier'], $identifiers_parent) && !in_array($datasets[$i]['identifier'], $identifiers_children)) {
+        $datasets_standalone[] = $datasets[$i];
+      }
+    }
+
+    $j = count($datasets_parent);
+    for ($i=0; $i < $j; $i++) {
+      $dataset_name = add_dataset($server, $map, $datasets_parent[$i]);
+      $count = $i + 1;
+      echo ('Added ' . $count . '/' . $j . ': '.  $dataset_name . ".\n");
+    }
+    break;
+
   case 'ckan':
     //ckan package_search might be paginated.
     $total = $ret['result']['count'];
